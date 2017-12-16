@@ -1,0 +1,13 @@
+Package: gada
+Type: Package
+Title: Genome Alteration Detection Algorithm (GADA)
+Version: 1.0
+Date: 2010-04-30
+Depends: R (>= 2.8.0)
+Suggests: plotrix, aroma.affymetrix, snow, ade4, rgl
+Author: Juan R Gonzalez, Roger Pique-Regi and Alejandro Caceres
+Maintainer: Juan R Gonzalez <jrgonzalez@creal.cat>
+Description: The package implements a flexible and efficient analysis pipeline to detect genomic copy number alterations from microarray data. It can import the raw copy number normalized intensities provided by Illumina BeadStudio, Affymetrix powertools, or any similar format. Probes of different samples are split into separate files and can be analyzed on a standalone workstation or in parallel using a cluster/multicore computer. The speed and accuracy of the genome alteration detection analysis (GADA) approach combined with parallel computing results in one of the fastest and most accurate methods, and it is especially suitable to extract copy number alterations (CNAs) on genomewide studies involving hundreds of samples utilizing high density arrays with millions of markers. Functions to perform multivariate analysis and determining common regions among individuals are implemented. Functions to assess association between CNVs blocks and disease is also provided. Useful tools for the summarization and visualization of the discovered CNA are also included. 
+License: GPL version 2 or newer
+URL: http://groups.google.com/group/gadaproject and http://www.creal.cat/jrgonzalez/software 
+Packaged: 2012-01-31 10:35:23 UTC; alejandro
