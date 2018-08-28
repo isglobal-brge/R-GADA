@@ -51,51 +51,24 @@ BackwardElimination(x, T, MinSegLen, saveInfo = TRUE)
   
   'summary' returns the altered segments (gains and loses) with the begining and the end of each one, as well as the number of probes in each segment. This information is given by chromosome
 
-  'plotRatio' produces a plot of log2ratios and segments by chromosome. See \code{\link{plotRatio}} for
-  further details.
-
-  See examples for further illustration about all previous issues. 
-
-
 }
 
 \references{ 
 
-Pique-Regi R, Caceres A, Gonzalez JR. "R-Gada: a package for fast detection and visualization of copy number alterations on multiple samples",  BMC Bioinformatics , Submitted Nov 2009
+Pique-Regi R, Caceres A, Gonzalez JR. "R-Gada: a package for fast detection and visualization of copy number alterations on multiple samples". BMC Bioinformatics, 2010;11:380.
 
-Pique-Regi R, Monso-Varona J,Ortega A, Seeger RC, Triche TJ, Asgharzadeh S. "Sparse representation and Bayesian detection of the genome copy number alterations from microarray data", Bioinformatics , Feb 2008
+Pique-Regi R, Monso-Varona J,Ortega A, Seeger RC, Triche TJ, Asgharzadeh S. "Sparse representation and Bayesian detection of the genome copy number alterations from microarray data", Bioinformatics , 2008;24(3):309-18.
 
 }
 
 
-\seealso{\code{\link{setupGADAIllumina}}, \code{\link{setupGADAaffy}}, \code{\link{setupGADAgeneral}}, \code{\link{SBL}}, \code{\link{parSBL}}, \code{\link{parBE}}}
+\seealso{\code{\link{setupGADA}}, \code{\link{SBL}}, \code{\link{parSBL}}, \code{\link{parBE}}}
 
 
 \examples{
-\dontrun{
-# import data
-download.file("http://www.creal.cat/jrgonzalez/GADA/dataIllumina.txt","dataIllumina.txt")
-
-# creating object of class setupGADA
-dataIllumina<-setupGADAIllumina(file="dataIllumina.txt", log2ratioCol=5, NumCols=6)
-
-# Segmentation procedure
-step1<-SBL(dataIllumina, estim.sigma2=TRUE)
-step2<-BackwardElimination(step1,T=4.5,MinSegLen=3) 
-
-# print
-step1
-step2
-
-# summary
-summary(step2)
-
-# plot log2ratio and segments
-plotRatio(step2)
-
-# the same for chromosome 12
-plotRatio(step2, 12)
-}
+ \dontrun{
+  See the vignette
+ } 
 }
 
 \keyword{models}

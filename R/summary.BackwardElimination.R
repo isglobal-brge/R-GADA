@@ -1,29 +1,25 @@
 summary.BackwardElimination <-function(object, which="both", T, BaseAmp, print=TRUE, ...)
  {
-
   which.ok<-match(which,c("Gains","Loses","both"),nomatch=0)
   if (which.ok==0)
    stop ("which should be 'Gains', 'Loses' or 'both' ")
   
-  gen.info<-attr(object,"gen.info")
+  gen.info <- attr(object,"gen.info")
 
 #RPR Pulling out the segments, and segments amplitudes
   if (!is.null(gen.info))
    {
-    k<-unique(gen.info$chr)
-    k<-k[!is.na(k)]
+    k <- attr(object, "chr")
     Segments<- WextIextToSegments(object[[1]])
     Segments$chromosome <- attr(object,"chr")[[1]]
     for (i in 2:length(k))
      {
-       
       temp<-WextIextToSegments(object[[i]]) 
       temp$chromosome <- attr(object,"chr")[[i]]
       temp[,1]<-temp[,1]+Segments[nrow(Segments),2]  
       temp[,2]<-temp[,2]+Segments[nrow(Segments),2]
       Segments<-rbind(Segments,temp)
      }
-
     }
   else 
    {
@@ -177,10 +173,10 @@ summary.BackwardElimination <-function(object, which="both", T, BaseAmp, print=T
 #
   if (!is.null(gen.info)) # JRG Oct'09
     {
-      ini<-Segments[,1]
-      end<-Segments[,2]
-      Segments[,1]<-gen.info[ini,3]
-      Segments[,2]<-gen.info[end,3]
+      ini <- as.character(Segments[,1]) # changed 08/2018 bad annot
+      end <- as.character(Segments[,2]) # changed 08/2018 bad annot
+      Segments[,1] <- gen.info[ini,3]
+      Segments[,2] <- gen.info[end,3]
     }
   else
    {

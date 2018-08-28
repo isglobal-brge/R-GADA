@@ -9,12 +9,14 @@
 }
 
 \usage{
-SBL(x, sigma2, aAlpha = 0.2, estim.sigma2 = FALSE, maxit = 10000, tol = 1e-08, verbose = FALSE, saveInfo = TRUE)
+SBL(x, sigma2, aAlpha = 0.2, 
+    estim.sigma2 = FALSE, maxit = 10000, tol = 1e-08, 
+    verbose = FALSE, saveInfo = TRUE)
 }
 
 \arguments{
   \item{x}{an object of class 'setupGADA' prepared using
-  'setupGADAgeneral', 'setupGADAaffy', or 'setupGADAIllumina'}
+  'setupGADA'}
   \item{sigma2}{the array noise level. See details}
   \item{aAlpha}{sparseness hyperparameter. See details}
   \item{estim.sigma2}{Should the 'sigma2' be estimated? the default is FALSE}
@@ -77,31 +79,20 @@ SBL(x, sigma2, aAlpha = 0.2, estim.sigma2 = FALSE, maxit = 10000, tol = 1e-08, v
 
 \references{ 
 
-Pique-Regi R, Caceres A, Gonzalez JR. "R-Gada: a package for fast detection and visualization of copy number alterations on multiple samples",  BMC Bioinformatics , Submitted Nov 2009
+Pique-Regi R, Caceres A, Gonzalez JR. "R-Gada: a package for fast detection and visualization of copy number alterations on multiple samples". BMC Bioinformatics, 2010;11:380.
 
-Pique-Regi R, Monso-Varona J,Ortega A, Seeger RC, Triche TJ, Asgharzadeh S. "Sparse representation and Bayesian detection of the genome copy number alterations from microarray data", Bioinformatics , Feb 2008
+Pique-Regi R, Monso-Varona J,Ortega A, Seeger RC, Triche TJ, Asgharzadeh S. "Sparse representation and Bayesian detection of the genome copy number alterations from microarray data", Bioinformatics , 2008;24(3):309-18.
 
 }
 
 
-\seealso{\code{\link{setupGADAIllumina}}, \code{\link{setupGADAaffy}}, \code{\link{setupGADAgeneral}}, \code{\link{BackwardElimination}}, \code{\link{parSBL}}, \code{\link{parBE}}}
+\seealso{\code{\link{setupGADA}}, \code{\link{BackwardElimination}}, \code{\link{parSBL}}, \code{\link{parBE}}}
 
 
 \examples{
-\dontrun{
-# import data
-download.file("http://www.creal.cat/jrgonzalez/GADA/dataIllumina.txt","dataIllumina.txt")
-
-# creating object of class setupGADA
-dataIllumina<-setupGADAIllumina(file="dataIllumina.txt", log2ratioCol=5, NumCols=6)
-
-# Segmentation procedure
-step1<-SBL(dataIllumina, estim.sigma2=TRUE)
-
-# print
-step1
-
-}
+ \dontrun{
+  See the vignette
+ } 
 }
 
 \keyword{models}

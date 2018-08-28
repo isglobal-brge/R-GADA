@@ -1,7 +1,7 @@
 summary.parGADA<-function(object, Samples, threshold, length.base, chr=c(1:22,"X","Y"), ...)
  {  
 
-  x<-object
+  x <- object
   setwd(x)
   
 
@@ -14,7 +14,7 @@ summary.parGADA<-function(object, Samples, threshold, length.base, chr=c(1:22,"X
 
   if (missing(threshold))
    {
-     threshold<-findNormalLimits(x)   
+     threshold <- findNormalLimits(x)   
      if(any(is.na(threshold)))
        stop("Normal Limits cannot be estimated. Give 'threshold' argument manually")
    }
@@ -51,8 +51,12 @@ summary.parGADA<-function(object, Samples, threshold, length.base, chr=c(1:22,"X
   no.cnv<-list()
   for (i in 1:length(chr))
    {
-   ans[[i]] <-lapply(res,FUN=ff,chr=chr[i],threshold=threshold,length.base=length.base)
-   no.cnv[[i]] <-lapply(res,FUN=ff2,chr=chr[i],threshold=threshold,length.base=length.base)
+   ans[[i]] <-lapply(res, FUN=ff, chr=chr[i], 
+                     threshold=threshold,
+                     length.base=length.base)
+   no.cnv[[i]] <-lapply(res, FUN=ff2, chr=chr[i], 
+                        threshold=threshold,
+                        length.base=length.base)
    }
 
   attr(ans,"no.cnv")<-no.cnv

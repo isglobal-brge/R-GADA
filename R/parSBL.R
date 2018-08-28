@@ -1,4 +1,5 @@
-parSBL<-function(x, Samples, estim.sigma2, aAlpha=0.2, verbose=TRUE, ...)
+parSBL<-function(x, Samples, estim.sigma2, aAlpha=0.2, 
+                 verbose=TRUE, mc.cores=1, ...)
  {
 
   setwd(x)
@@ -50,7 +51,9 @@ parSBL<-function(x, Samples, estim.sigma2, aAlpha=0.2, verbose=TRUE, ...)
    if (verbose)
      cat("Segmentation procedure for",Samples[2]-Samples[1]+1,"samples ... \n")
 
-   res<-plapply(Samples[1]:Samples[2],function(i) try(analize.i(i, estim.sigma2=estim.sigma2, aAlpha=aAlpha, gen.info=gen.info, verbose=verbose), TRUE))
+   res <- mclapply(Samples[1]:Samples[2],
+                  function(i) try(analize.i(i, estim.sigma2=estim.sigma2, aAlpha=aAlpha, gen.info=gen.info, verbose=verbose), TRUE),
+                  mc.cores=mc.cores)
 
 
    if (verbose)

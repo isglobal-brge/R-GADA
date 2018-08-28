@@ -19,46 +19,45 @@
     y <- x$log.ratio
     M <- length(y)
     if (sigma2 < 0) {
-      sigma2 <- 0.5 * mean(diff(y)^2, trim = 0.01)
+      sigma2 <- 0.5 * mean(diff(y)^2, trim = 0.01, na.rm = TRUE)
       cat("    The estimated sigma2 =", sigma2, "\n")
     }
     out <- SBL.fit(0, y, NULL, NULL, NULL, sigma2, aAlpha, 
                    maxit, tol, debug)
   }
   else {
-    chr <- unique(gen.info$chr)
-    chr <- chr[!is.na(chr)]
-
+    # chr <- unique(gen.info$chr) # Modified JRG 08/2018!!! important!
+    # chr <- chr[!is.na(chr)]
+    chr <- levels(gen.info$chr)
+    n.chr <- length(chr)
     control <- 1:nrow(gen.info)
     if (sigma2 < 0) {
       sigma2 <- 0
       totalM <- 0
-      if (length(chr) > 22) 
-        n.chr <- 22
-      else n.chr <- length(chr)
+ 
       for (i in 1:n.chr) {
 
 # Changed to control missing data, JRG
 #        selec <- control[gen.info$chr == chr[i]]
 
-        tt<-gen.info$chr==chr[i]
-        tt<-tt[!is.na(tt)]  # RPR:  What is this doing?
+        tt <- gen.info$chr==chr[i] & !is.na(gen.info$chr)
         selec <- control[tt]
 
         y <- x$log.ratio[selec]
         M <- length(y)
         totalM <- totalM + (M - 1)
         sigma2 <- sigma2 + (M - 1) * 0.5 * mean(diff(y)^2, 
-                                                trim = 0.01)
+                                                trim = 0.01, na.rm=TRUE)
       }
       sigma2 <- sigma2/totalM
       cat("    The estimated sigma2 =", sigma2, "\n")
     }
-    out <- lapply(1:length(chr), SBL.fit, x = x$log.ratio, 
+    
+    out <- lapply(1:n.chr, SBL.fit, x = x$log.ratio, 
                   control = control, gen.info = gen.info, chr = chr, 
                   sigma2 = sigma2, aAlpha = aAlpha, maxit = maxit, 
                   tol = tol, debug = debug)
-    attr(out, "chr") <- chr  #RPR  I moved this line inside here bc if no gen
+    attr(out, "chr") <- chr
   }
 
   # RPR Potential BUG!!! Do we also account for the removed NA probes in the plots?

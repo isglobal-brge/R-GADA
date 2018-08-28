@@ -11,7 +11,8 @@ This function performs backward elimination procedure after SBL segmentation for
 }
 
 \usage{
-parBE(x, Samples, T, MinSegLen, verbose = TRUE, ...)
+parBE(x, Samples, T, MinSegLen, verbose = TRUE, 
+      mc.cores=1, ...)
 
 \method{print}{summaryParGADA}(x, ...)
 \method{labels}{parGADA}(object, ...)
@@ -26,6 +27,7 @@ parBE(x, Samples, T, MinSegLen, verbose = TRUE, ...)
   \item{MinSegLen}{minimum number of probes each segment must contain (see 'BackwardElimination' function)}
   \item{verbose}{is information about each individual showed in the console? Default is TRUE}
   \item{object}{an object of class 'parGADA' or 'summaryParGADA'}
+  \item{mc.cores}{number of cores to be used when using multiple cores (see argument 'mc.cores' from 'mclapply' function of 'parallel' library) }
   \item{\dots}{other arguments passed through the function 'BackwardElimination'}
 }
 
@@ -38,37 +40,16 @@ This function saves the segments for each sample in a directory called SBL
 }
 
 \references{
-Pique-Regi R, Caceres A, Gonzalez JR. "R-Gada: a package for fast detection and visualization of copy number alterations on multiple samples",  BMC Bioinformatics , Submitted Nov 2009
+Pique-Regi R, Caceres A, Gonzalez JR. "R-Gada: a package for fast detection and visualization of copy number alterations on multiple samples". BMC Bioinformatics, 2010;11:380.
 }
 
 
-\seealso{\code{\link{parSBL}}, \code{\link{setupParGADAIllumina}}, \code{\link{setupParGADAaffy}}}
+\seealso{\code{\link{parSBL}}, \code{\link{setupParGADA}}}
 
 \examples{
-\dontrun{
-###
-### First step (required)
-### 
-
-# Read data 
-# a folder called rawData containing a file for each individual is required
-
-# Illumina data
-myExample<-setupParGADAIllumina(log2ratioCol=4, NumCols=5)
-
-# Affymetrix data
-myExample<-setupParGADAaffy(log2ratioCol=4, NumCols=5)
-
-###
-### Second step
-### 
-
-# segmentation for all samples
-parSBL(myExample, estim.sigma2=TRUE, aAlpha=0.8)
-parBE(myExample,T=8, MinSegLen=8)
-
-}
-
+ \dontrun{
+  See the vignette
+ } 
 }
 
 \keyword{utilities}

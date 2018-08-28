@@ -1,45 +1,31 @@
+useDynLib(gada, .registration = TRUE)
+
 export(
-addGadaToAromaAffymetrix,
-splitDataBeadStudio,
-setupGADAIllumina,
-setupGADAaffy,
-setupGADAgeneral,       
+setupGADA,
 BackwardElimination,
 SBL,
-plotRatio,
-setupParGADAIllumina,
-setupParGADAaffy,
+WextIextToSegments,
+setupParGADA,
 parSBL,
 parBE,
-plotWG,
-getAlteredProbes,
 findNormalLimits,
-WextIextToSegments, #RPR: I need it here for Aroma.affymetrix       
-exportToBED,
-discriminCNV,
-rankVariables,
-getNamesProbes,
-dudi.acm.fortran,
-multiCNVassoc,
-getPvalBH,
-sortPopData,
-reduceMatrix,
-getChromosomeDat,
-getReducedData
+getCNVs,
+plotCNVs,
+getCounts
 )
 
-
-importFrom(utils, data)
-
-S3method(plotRatio,setupGADA)
-S3method(plotRatio,BackwardElimination)
-S3method(plotRatio,parGADA)
+importFrom("stats", "aggregate", "end", "median", "start")
+importFrom("parallel", "mclapply")
+importFrom("IRanges", "IRanges")
+importFrom("data.table", "fread")
+import("GenomicRanges")
+import("Gviz")
 
 S3method(print,SBL)
 S3method(print,BackwardElimination)
 S3method(print,setupGADA)
 S3method(print,summaryParGADA)
-S3method(plot,summaryParGADA)
+
 
 S3method(summary,BackwardElimination)
 S3method(summary,parGADA)
@@ -48,24 +34,3 @@ S3method(summary,list)
 S3method(labels,parGADA)
 S3method(labels,summaryParGADA)
 
-S3method(print,cnv.discrimin)
-S3method(plot,cnv.discrimin)
-S3method(plot,acm)
-
-S3method(plot,multiCNVassoc)
-
-# not exported:
-  # drawChromosome
-  # drawChromosomeZoom
-  # plotlogRatio
-  # selectSegment
-  # collapseInfo
-  # WextIextToSegments
-  # SBL.fit
-  # BackwardElimination.fit
-  # plapply
-  # countAltered.i
-  # GadaInAromaAffymetrix
-  # findNormalLimits
-  # ... more (Alejandro, MCDA)
-  # ... more for plots GWAS

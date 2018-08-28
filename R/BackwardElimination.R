@@ -1,5 +1,5 @@
 `BackwardElimination` <-
-function(x,T,MinSegLen, saveInfo=TRUE) 
+function(x, T, MinSegLen, saveInfo=TRUE) 
  {
 
   if (!inherits(x, "SBL") && !inherits(x, "BackwardElimination")) 
@@ -37,11 +37,10 @@ function(x,T,MinSegLen, saveInfo=TRUE)
     out$sigma2<-ret$sigma2
    }
   else
-   {
-    chr<-unique(gen.info$chr)  
-    chr<-chr[!is.na(chr)]
+   { 
+    chr <- attr(x, "chr")
     out<- lapply(1:length(chr), BackwardElimination.fit, x=x, chr=chr, T=T, MinSegLen=MinSegLen)
-    attr(out, "chr") <- chr  #RPR I moved this line inside the else
+    attr(out, "chr") <- chr  
    }  
 
    attr(out,"data")<-attr(x,"data")

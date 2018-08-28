@@ -1,5 +1,6 @@
-SBL.fit<-function(i,x,control,gen.info,chr,sigma2,aAlpha,maxit,tol,debug)
-  {              
+SBL.fit<-function(i, x, control, gen.info, chr, sigma2,
+                  aAlpha, maxit, tol, debug)
+  {         
     ans<-list()
     if (i==0) #  analysis using whole data   
       {

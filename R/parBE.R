@@ -1,4 +1,5 @@
-parBE<-function(x, Samples, T, MinSegLen, verbose=TRUE, ...)
+parBE<-function(x, Samples, T, MinSegLen, verbose=TRUE, 
+                mc.cores=1, ...)
  {
 
   setwd(x)
@@ -57,7 +58,12 @@ parBE<-function(x, Samples, T, MinSegLen, verbose=TRUE, ...)
    if (verbose)
      cat("Backward elimination procedure for",Samples[2]-Samples[1]+1,"samples ... \n")
 
-   res<-plapply(Samples[1]:Samples[2], analize.i, T=T, MinSegLen=MinSegLen, gen.info=gen.info, labels=attr(x,"labels.samples"), verbose=verbose, ok=ok)
+   res <- mclapply(Samples[1]:Samples[2], 
+                   analize.i, T=T, MinSegLen=MinSegLen, 
+                   gen.info=gen.info, 
+                   labels=attr(x,"labels.samples"), 
+                   verbose=verbose, ok=ok, 
+                   mc.cores=mc.cores)
 
    if (verbose)
      cat("Backward elimination procedure for",Samples[2]-Samples[1]+1,"samples ...done \n")

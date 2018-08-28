@@ -58,7 +58,7 @@ print.summaryParGADA<-function(x, ...)
   cat("Summary results for", nInd, "individuals \n")
   cat("------------------------------------------- \n")
 
-  cat("NOTE: ", no.cnvT, " segments with length not in the range ", length.base[1], "-", length.base[2], " bases", " and with mean log2ratio in the range (", threshold[1], ",", threshold[2], ") have been discarded \n", sep="")
+  cat("NOTE: ", no.cnvT, " segments with length not in the range ", length.base[1], "-", length.base[2], " bases \n", " and with mean log2ratio in the range (", threshold[1], ",", threshold[2], ") have been discarded \n", sep="")
 
 
 

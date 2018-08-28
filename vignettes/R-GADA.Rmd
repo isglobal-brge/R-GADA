@@ -1,0 +1,361 @@
+---
+title: "R-GADA package: User’s manual"
+subtitle: "Juan R. Gonzalez and Roger Pique-Regi"
+author: |
+   Institute for Global Health (ISGlobal), Barcelona, Spain
+   Bioinformatics Research Group in Epidemiolgy (BRGE) 
+   [http://brge.isglobal.org](http://brge.isglobal.org)
+date: "`r Sys.Date()`"
+package: "`r pkg_ver('gada')`"
+output: 
+  BiocStyle::html_document:
+    number_sections: true
+    toc: yes
+    fig_caption: yes
+vignette: >
+  %\VignetteIndexEntry{R-GADA package: User’s manual}
+  %\VignetteEngine{knitr::rmarkdown}
+  \usepackage[utf8]{inputenc} 
+---
+
+```{r setup_knitr, include=FALSE}
+knitr::opts_chunk$set(message = FALSE, warning = FALSE,
+                      cache=TRUE)
+```
+
+# Introduction
+
+This manual describes the gada package that implements a flexible and efficient analysis pipeline to detect genomic copy number alterations from microarray data. The package can import the raw copy number normalized intensities provided by Illumina BeadStudio, Affymetrix powertools, or any similar program from Bioconductor which is able to prepare data in pennCNV format. Probes of different samples should provided into separate files and can be analyzed on a standalone
+workstation or in parallel using a cluster/multicore computer. The speed and accuracy of the genome alteration detection analysis (GADA) approach combined with parallel computing results in one of the
+fastest and most accurate methods, and it is especially suitable to extract copy number alterations (CNAs) on genomewide studies involving hundreds of samples utilizing high density arrays with millions of markers.
+
+
+# Getting started
+The development version of R-GADA package can be installed from BRGE GitHub repository:
+
+```{r install_gada, eval=FALSE}
+devtools::install_github("isglobal-brge/R-GADA")
+```
+
+Then, the package can be loaded into R as usual
+
+```{r load_library, cache=FALSE}
+library(gada)
+```
+
+Data should be provided as a text file in pennCNV format [http://http://penncnv.openbioinformatics.org](http://http://penncnv.openbioinformatics.org). This can be performed by using the BeadStudio tool when analyzing Illumina data (see [http://www.illumina.com/](http://www.illumina.com/)), or Affymetrix power tools (see [https://www.affymetrix.com/](https://www.affymetrix.com/) or other Bioconductor packages if Affymetrix SNP data is analyzed: _crlmm_, _affy2sv_, etc. This is the structure of a given  example: 
+
+```
+Name       Chr Position   Log.R.Ratio B.Allele.Freq GType
+rs758676   7   12878632	  0.1401      0.4977        AB
+rs3916934  13  103143536  0.3934      0.4610        AA
+rs2711935  4   38838852	 -0.1091      0.0026        AA
+rs17126880 1   64922104	  0.0478      0.9910        AA
+rs12831433 12  4995220	 -0.1661      0.0000        AA
+```
+
+
+# Analysis of a single array
+
+## Importing and preparing array data, the `setupGADA` class.
+The first step to use GADA is to prepare a `setupGADA` object that encapsulates the array hybridization intensities and other information such as the marker position in the genome, and the genotype in case of SNP markers. This object can be prepared with `setupGADA` function which directly load directly from text files
+in pennCNV format. 
+
+Let us illustrate how to analyze a single array data by analyzing a pennCNV file available at `brgedata` package that can be installed from Bioconductor. This code recovers the path where the pennCNV file is located
+
+
+```{r path_illumina}
+path.data <- file.path(system.file(package="brgedata"),
+                       "extdata/madData/CASE369.txt")
+```
+
+It contains the required information
+
+```{r show}
+data.table::fread(path.data)
+```
+
+that can be imported into R-GADA by 
+
+```{r setup_illumina}
+step0 <- setupGADA(path.data,
+                   log2ratioCol = 4,
+                   BAFcol = 5)
+```
+
+By default, it is assumed that the three first columns contain the annotation data (snp id, chromosome, position). The order can be changed using the arguments `MarkerIdCol`, `ChrNameCol` and `ChrPosCol`. It is mandatory to indicate the columns having the log2ratio and B-allele frequency using `log2ratioCol` and `BAFcol` arguments, respectively. 
+
+After importing raw data, we can obtain a summary by typing the name of the object of class `setupGADA` or using the generic method print.
+
+```{r summary}
+step0
+```
+
+```{r plotArray, eval=FALSE, echo=FALSE}
+library(Gviz)
+library(GenomicRanges)
+x <- step0
+genome <- "hg19"
+chr <- "chr7"
+
+gen.info <- attr(x, "gen.info")
+dtrack <- DataTrack(data = x$log.ratio, 
+                    start = gen.info$position,
+                    end = gen.info$position + 1,
+                    chromosome = paste0("chr", gen.info$chr),
+                    genome = genome, 
+                    name = "LRR")
+gtrack <- GenomeAxisTrack()
+itrack <- IdeogramTrack(genome = genome, 
+                          chromosome = chr)
+plotTracks(list(itrack, gtrack, dtrack))
+
+o <- summary(step2, print = FALSE)
+cnvs <- getCNVs(step2)
+atrack <- AnnotationTrack(cnvs.range, fill = fill,
+                            name = "Individuals",
+                            group = cnvs.range$sample, 
+                            cex.group=0.5)
+
+dtrack2 <- DataTrack(data = x$log.ratio, 
+                    start = gen.info$position,
+                    end = gen.info$position + 1,
+                    chromosome = paste0("chr", gen.info$chr),
+                    genome = genome, 
+                    name = "LRR")
+
+```
+
+
+## Copy number segmentation
+
+The segmentation procedure is performed by using GADA algoritm which is divided in two steps as described in [Pique-Regi R. et al., 2008](https://www.ncbi.nlm.nih.gov/pubmed/18203770). The first step fits a sparse Bayesian learning (SBL) model and finds the most likely candidate breakpoints for the copy number state. The second step, implements a backward elimination (BE) procedure to remove sequentially the least significant breakpoints estimated bye the SBL model and allows a flexible adjustment of the False Discovery Rate (FDR).
+
+The first step is implemented on the SBL procedure
+
+```{r step1}
+step1 <- SBL(step0, estim.sigma2=TRUE)
+```
+
+and requires the input data (e.g. pennCNV data) to be prepared as a `setupGADA` object (see previous section). The SBL is controled by two parameters: 1) the array noise level $\sigma^2$ , and 2) the sparseness hyperparameter a $\alpha$ . The array noise level $\sigma^2$ can be estimated automatically by the algorithm by setting `estim.sigma2=TRUE`, otherwise if $\sigma^2$ is known a priori it can be set manually by `sigma2`. The sparseness hyperparameter $\alpha$ (i.e. `aAlpha`) controls the SBL prior distribution which is uninformative about the location an amplitude of the copy number alteration (CNA) breakpoints but imposes a penalty on the number of CNA breakpoints. A higher a $\alpha$ implies that less breakpoints are expected a priori and results with fewer true CNA detected but also fewer false positives. However, this adjustment of trade-off between the sensitivity and FDR can be done much more efficiently by a backward elimination (BE) procedure on the model obtained by SBL using a high sensitivity setting $\alpha = 0.2$ (i.e. `aAlpha`=0.2 which is default value).
+
+The second step, the backward elimination procedure (BackwardElimination) is used to quickly adjust the FDR,
+
+```{r step2}
+step2 <- BackwardElimination(step1, T=7, MinSegLen=10)
+```
+
+where T argument indicates the critical value of the BE algorithm. That is, the statistical score $t_m$ associated with each breakpoint m remaining in the model has to be higher than T. The score $t_m$ can be interpreted as the difference between the sample averages of the probes falling on the left and right segment, divided by a pooled estimation of the standard error. Assympotically, when the number of probes on the right and left segments are very large this score will converge to a standard normal distribution, i.e. $N(0, 1)$. The argument `MinSegLen` can be used to limit the minimum number of probes each CNA segment must contain. We recommend using `MinSegLen=3` (default) to eliminate false detections due to extreme outliers.
+      The following settings on a and T are recommended depending on the desired             sensitivity and FDR:
+ 
+      --------------------------------------------------------------------
+       (higher sensitivity , higher FDR ) <----> $(\alpha = 0.2,T > 3)$
+                                          <----> $(\alpha = 0.5,T > 4)$
+       (lower sensitivity , lower FDR )   <----> $(\alpha = 0.8,T > 5)$
+      --------------------------------------------------------------------
+
+The print generic function gives the user the following information for each step:
+
+```{r step1_result}
+step1
+```
+
+```{r step2_result}
+step2
+```
+The SBL function returns the number of discontinuities for each chromosome, the number of iterations as well as the tolerance given to the SBL algorithm to converge. The BackwardElimination function gives the number of segments for each chromosome adjusted by the parameter T and the minimum number of consecutive altered probes given in the argument MinSegLen. We want to notice too, the advantage of using a two step approach. We can flexibly adjust T (remove or add breakpoints that will follow in significance) without having to fit the entire SBL model again. As T and MinSegLen increase the number of CNA breakpoints decreases.
+
+Finally, the altered segments defined between the modeled breakpoints are reported using the `summary`R method. We classify the segments as gain and losses using a simple threshold on the segment mean amplitude (i.e. MeanAmp).
+
+```{r summary2}
+summary(step2)
+```
+
+First, the algorithm estimates the reference ratio corresponding to two copy numbers (’Base Amplitude of copy number 2 in the output) computing the median intensity along the autosomal genome. This value can also be manually specified using `summary(step2,BaseAmp=0)`. After that, the segment mean apmplityd `MeanAmp` is normalized by substracting the reference ratio of two copy numbers in order to take into account differences among arrays with respect to uncontrolled factors (amount of DNA, different laboratories, ...). Then the segments are classified as Gain (State=1), Loss (State=-1), or Neutral (State=0) depending on wheather the segment mean amplitude is above, below, or non-significantly different than `BaseAmp`. Only the segment with significant deviations, gains or losses, are reported by the `summary` method.
+
+In this case, the function `plotLRR` shows the log-ratio intensities as well as the segments obtained after backward elimination procedure (Figure 2.3).
+
+
+This plot can also be obtained chromosome by chromosome. As an example, Figure 2.3 shows the intensities and segments found after applying the backward elimination procedure in chromosome 12.
+
+
+
+# Analysis of multiple arrays
+
+## Creating `setupGADA` objects for multiple arrays
+
+Multiple arrays in pennCNV format can be analyzed using `setupParGADA` function. It enforces a strict directory structure having all the samples located into a directory called _rawData_. This is an example of how data are organized before the analysis is completed
+
+- rawData
+    - CASE369.txt 
+    - CASE371.txt
+    - CASE377.txt
+    - CONTROL152.txt
+    - CONTROL191.txt
+
+The files should be prepared in pennCNV format as previously described. Remember that it is assumed that the three first columns contain the annotation data (snp id, chromosome, position). The order can be changed using the arguments `MarkerIdCol`, `ChrNameCol` and `ChrPosCol`. We have prepared a set of 5 samples having the required format that are available in the `brgedata` package. They can be copied into the required folder by
+
+```{r copy_data}
+ss1 <- system.file("extdata/madData", package="brgedata")
+dir.create("rawData")
+ss2 <- "rawData"
+files <- list.files(ss1)
+file.copy(file.path(ss1,files), ss2)
+```
+
+As a result, our working directory contains a folder called `rawData` having all the files we want to process. 
+
+```{r show_wd}
+dir()
+dir("rawData")
+```
+
+Then, the required `setupGADA` objects of each sample can be obtained using `setupParGADA` function. As in the case of analyzing a single sample, it is mandatory to indicate the columns having the log2ratio and B-allele frequency:
+
+```{r setupPar}
+example <- setupParGADA(log2ratioCol = 4,
+                        BAFcol = 5) 
+```
+
+This function calls repeteadly the function setupGADAIllumina, so the arguments `log2ratioCol` and `BAFcol` are passed through function `setupGADA`, previously described . Other
+arguments for `setupGADA` can be also set from this function. The function save a different object of class `setupGADA` for each sample in a directory called _SBL_. The function returns an object of class `parGADA`, which is very useful because the process can be resumed later in case of a computer crash. An object of class parGADA contains this information:
+
+```{r show_object}
+example
+```
+
+The name of the analyzed samples can be directely obtained using the generic function `labels`
+
+```{r labels}
+labels(example)
+```
+
+This object is also important because the data is more readily available for the analysis and plotting procedures.
+
+
+So, it is recommended to save this object to continue performing the analysis in case of a computer crash
+
+```{r save, eval=FALSE}
+save(example, file="example.Rdata")
+```
+
+## Segmentation procedure
+
+Once raw data is imported to gada as objects of class `setupGADA`, we can perform segmentation procedureon multiples arrarys by using the function `parSBL` that repeatedly calls the function SBL. The syntaxis is similar to those used in the function SBL:
+
+```{r sbl}
+parSBL(example, estim.sigma2=TRUE, aAlpha=0.8)
+```
+
+By default perform segmentation procedure is performed for all samples we have in the folder `SBL` that have been imported as a `setupGADA` objects. It is possible to perform segmentation procedure for a subset of individuals (samples 4 and 8) by using the argument `Samples` as following:
+
+```{r SBL_subset, eval=FALSE}
+parSBL(myExample, Samples=c(4,8), estim.sigma2=TRUE)
+```
+
+To finish the segmentation procedure, we need to do a backward elimination step for all individuals. This process is implemented in the function `parBE` that has also been implemented to be used in
+different processors (use argument `mc.cores` as in the `mclapply` function from `parallel` library).
+
+```{r be}
+parBE(example, T=4, MinSegLen=100)
+```
+
+The function computes the backward elimination procedure and store the segments in the directory SBL. The arguments are the same as those used in the function `BackwardElimination` previously described.
+
+## Getting CNV calls
+
+The generic function `summary` summarize the segments obtained in all samples by chromosome:
+
+```{r summary3}
+ans <- summary(example, length.base=c(500,10e6))
+```
+
+This function returns and object of class `summaryParGADA`. The NOTE is used to alert the user that all segments will be reported. In some situations, one can only be interested in segments with a
+given size. To do so, the parameter `length.base` should be changed as we later illustrate. Using the generic funtion print we obtain the following information:
+
+```{r print_summary}
+ans
+``` 
+
+If we are only interested in segments altered with size between $10^3$ and $10^6$ pair of bases, we should execute
+
+```{r summaryChange}
+ans2 <- summary(example, length.base=c(10e3,10e6))
+ans2
+```
+
+Notice that this functions only reports those segments with a mean log2ratio outside given limits. By default, these limits are estimated using a threshold approach to classify segments into Gain and Loss state, considering 2 copies as the normal state. The
+threshold is automatically estimated using the X chromosome of a normal population that includes males (XY) and females (XX). It his case these are obtained by
+
+```{r findLimits}
+findNormalLimits(example)
+```
+
+These limits can be changed by the user, by changing the argument `theshold`:
+
+```{r summaryChange2}
+ans2 <- summary(example, length.base=c(500,30e6),
+                threshold = c(-0.07, 0.02))
+ans2
+```
+
+The CNAs (0.5Kb up to 30 Mb) of each individual can be obtained as a `GenomicRange` by simply:
+
+```{r getCNVs}
+library(GenomicRanges)
+ans3 <- summary(example, length.base=c(500,30e6))
+cnvs <- getCNVs(ans3)
+cnvs
+```
+
+The CNAs of a given sample is obtained by:
+
+```{r subsetSample}
+subset(cnvs, sample=="CASE377")
+```
+
+Similarly, the CNAs observed in a given chromosome are obtained with:
+
+```{r subsetChr}
+subset(cnvs, seqnames=="chr18")
+```
+
+The number of samples aggregated by a grouping variable (e.g. case/control) can be obtained by using `getCounts` function. Let create a variable `cc` having _CASE_ and _CONT_ levels to illustrate how to do this type of summarization
+
+```{r createCC}
+cnvs$cc <- substr(cnvs$sample, 1, 4)
+cnvs
+```
+
+Now, the number of samples having a CNA at each segment by _CASE_ and _CONT_ status is obtained by
+
+```{r countsCC}
+getCounts(cnvs, group="cc")
+```
+
+
+# Data visualization
+
+CNAs of all individuals in a given genomic region can be visualize using using `Gviz` package. Genes can also be annotated using annotation available at `Homo.sampiens` Bioconductor package.
+
+```{r loadVis}
+library(Gviz)
+library(Homo.sapiens)
+```
+
+The CNAs (gains in green and loses in blue) of the 5 analyzed samples located in the chromosome 18 between megabases 40 and 70 can be visualized by simply:
+
+```{r plotCNVs}
+rr <- GRanges("chr18:40e6-70e6")
+plotCNVs(cnvs, range=rr, drawGenes = TRUE)
+```
+
+
+```{r remove directories, echo=FALSE}
+unlink("rawData", recursive = TRUE)
+unlink("SBL", recursive = TRUE)
+```
+
+```{r sessionInfo}
+sessionInfo()
+```
