@@ -10,4 +10,4 @@ and it can be loaded into R by:
 `library(gada)`
 
 GADA requires C and Fortran compilation. Therefore, gfortran is required to be installed for those researchers
-using Windows. For those of you having problems with this, you can install the compiled .zip file 
+using Windows. For those of you having problems with this, you can install the compiled .zip file available [here](https://github.com/isglobal-brge/R-GADA/blob/master/gada_2.0.1.zip)
