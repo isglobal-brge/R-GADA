@@ -8,3 +8,6 @@ Package is installed by:
 and it can be loaded into R by:
 
 `library(gada)`
+
+GADA requires C and Fortran compilation. Therefore, gfortran is required to be installed for those researchers
+using Windows. For those of you having problems with this, you can install the compiled .zip file 
