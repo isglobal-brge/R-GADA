@@ -7,8 +7,8 @@ This function plots the CNVs of each sample in a given genomic region and annota
 }
 
 \usage{
-plotCNVs(x, range, genome="hg19", drawGenes=FALSE, group,  
-         mosaic = FALSE)
+plotCNVs(x, range, genome="hg19", drawGenes=FALSE, group, 
+         col.cnvs =c("darkgreen", "darkblue"), mosaic = FALSE)
 }
 
 \arguments{
@@ -17,6 +17,7 @@ plotCNVs(x, range, genome="hg19", drawGenes=FALSE, group,
   \item{genome}{the reference genome. The default is 'hg19'}
   \item{drawGenes}{should genes be showed in the plot? The default is FALSE}
   \item{group}{a grouping variable to provide CNVs for each level. Only to levels are allowed. Not required.}
+  \item{col.cnvs}{color of gain and loses. Default is darkgreen for gains and darkblue for loses.}
   \item{mosaic}{argument not relevant for R-GADA (see MAD package)}
 }
 

@@ -1,4 +1,5 @@
-plotCNVs <- function(x, range, genome="hg19", drawGenes=FALSE, 
+plotCNVs <- function(x, range, genome="hg19", drawGenes=FALSE,
+                     col.cnvs =c("darkgreen", "darkblue"),
                      group, mosaic = FALSE){
   
   if(missing(range))
@@ -9,7 +10,7 @@ plotCNVs <- function(x, range, genome="hg19", drawGenes=FALSE,
   
   if (missing(group)) {
     if (!mosaic) {
-     fill <- ifelse(cnvs.range$State==1, "darkgreen", "darkblue") 
+     fill <- ifelse(cnvs.range$State==1, col.cnvs[1], col.cnvs[2]) 
     }
     else{
      fill <- ifelse(cnvs.range$State==1, "orange",
@@ -28,7 +29,8 @@ plotCNVs <- function(x, range, genome="hg19", drawGenes=FALSE,
            send an email to the maintainer for a improved version")
     fill <- ifelse(gg==gg[1], "tomato", "lightblue")
   }
-  cnvs.l <- AnnotationTrack(cnvs.range, fill = fill,
+  cnvs.l <- AnnotationTrack(cnvs.range, 
+                            fill = fill,
                             name = "Individuals",
                             group = cnvs.range$sample, 
                             cex.group=0.5)
@@ -65,10 +67,12 @@ plotCNVs <- function(x, range, genome="hg19", drawGenes=FALSE,
                                name = "Genes")
     
     plotTracks(c(itrack, gtrack, grtrack, cnvs.l), 
-               groupAnnotation = "group")
+               groupAnnotation = "group", from = start(rr),
+               to = end(rr))
   }
   else{
     plotTracks(c(itrack, gtrack, cnvs.l), 
-               groupAnnotation = "group")
+               groupAnnotation = "group", from = start(rr),
+               to = end(rr))
   }
 }
