@@ -1,5 +1,6 @@
 plotCNVs <- function(x, range, genome="hg19", drawGenes=FALSE,
-                     col.cnvs =c("darkgreen", "darkblue"),
+                     col.cnvs = c("darkgreen", "darkblue"),
+                     col.group = c("tomato", "lightblue"),
                      group, mosaic = FALSE){
   
   if(missing(range))
@@ -27,7 +28,7 @@ plotCNVs <- function(x, range, genome="hg19", drawGenes=FALSE,
     if(length(gg.l) > 2)
       stop("grouping variable must be two levels \n
            send an email to the maintainer for a improved version")
-    fill <- ifelse(gg==gg[1], "tomato", "lightblue")
+    fill <- ifelse(gg==gg[1], col.group[1], col.group[2])
   }
   cnvs.l <- AnnotationTrack(cnvs.range, 
                             fill = fill,

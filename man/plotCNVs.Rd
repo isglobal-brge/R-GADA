@@ -18,6 +18,7 @@ plotCNVs(x, range, genome="hg19", drawGenes=FALSE, group,
   \item{drawGenes}{should genes be showed in the plot? The default is FALSE}
   \item{group}{a grouping variable to provide CNVs for each level. Only to levels are allowed. Not required.}
   \item{col.cnvs}{color of gain and loses. Default is darkgreen for gains and darkblue for loses.}
+  \item{col.group}{color of grouping variable. Used when 'group' is provided. Default are tomato and lightblue.}
   \item{mosaic}{argument not relevant for R-GADA (see MAD package)}
 }
 
